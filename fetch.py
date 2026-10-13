@@ -19,25 +19,27 @@ def world():
 
 
 
+
 def antam():
-    url = "https://www.logammulia.com/id/harga-emas-hari-ini"
-    html = get(url)
+    url = "https://logam-mulia-api.iamutaki.workers.dev/api/prices/logammulia"
+    j = json.loads(get(url))
 
-    pola = [
-        r'(?is)(?:harga|price)[^<>]{0,100}?1\s*gram[^<>]{0,100}?'
-        r'(?:Rp\.?\s*)?([\d.]{7,12})',
-        r'(?is)1\s*gram[^<>]{0,100}?'
-        r'(?:Rp\.?\s*)?([\d.]{7,12})',
-    ]
+    if not j.get("success"):
+        raise ValueError("API harga Antam gagal")
 
-    for p in pola:
-        m = re.search(p, html)
-        if m:
-            v = int(re.sub(r"\D", "", m.group(1)))
+    for item in j.get("data", []):
+        if (
+            item.get("source") == "logammulia"
+            and item.get("material") == "gold"
+            and item.get("materialType") == "Emas Batangan"
+            and item.get("weight") == 1
+        ):
+            v = int(item["sellPrice"])
             if 100_000 <= v <= 100_000_000:
                 return v
 
-    raise ValueError("Harga Antam 1 gram tidak ditemukan pada halaman sumber")
+    raise ValueError("Harga Antam 1 gram tidak ditemukan")
+
 
 
 
