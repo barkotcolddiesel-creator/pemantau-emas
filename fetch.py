@@ -18,16 +18,27 @@ def world():
     return round(float(j["price"]), 2)
 
 
+
 def antam():
-    html = get("https://www.logammulia.com/id/harga-emas-hari-ini")
-    text = re.sub(r"\s+", " ", re.sub(r"<[^>]+>", " ", html))
-    m = re.search(r"\b1\s*gr(?:am)?\b\s*(?:Rp\.?)?\s*([\d.,]{7,12})", text, re.I)
-    if not m:
-        raise ValueError("baris 1 gram tidak ditemukan")
-    v = int(re.sub(r"\D", "", m.group(1)))
-    if not 100_000 <= v <= 100_000_000:
-        raise ValueError(f"angka tidak masuk akal: {v}")
-    return v
+    url = "https://www.logammulia.com/id/harga-emas-hari-ini"
+    html = get(url)
+
+    pola = [
+        r'(?is)(?:harga|price)[^<>]{0,100}?1\s*gram[^<>]{0,100}?'
+        r'(?:Rp\.?\s*)?([\d.]{7,12})',
+        r'(?is)1\s*gram[^<>]{0,100}?'
+        r'(?:Rp\.?\s*)?([\d.]{7,12})',
+    ]
+
+    for p in pola:
+        m = re.search(p, html)
+        if m:
+            v = int(re.sub(r"\D", "", m.group(1)))
+            if 100_000 <= v <= 100_000_000:
+                return v
+
+    raise ValueError("Harga Antam 1 gram tidak ditemukan pada halaman sumber")
+
 
 
 def rp(v):
